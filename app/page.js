@@ -5,14 +5,25 @@ import { useEffect, useState } from 'react';
 
 export default function Home() {
     const [dbReady, setDbReady] = useState(false);
+    const [scriptsLoaded, setScriptsLoaded] = useState(0);
 
     // Initialize database on first load
     useEffect(() => {
         fetch('/api/init', { method: 'POST' })
             .then(r => r.json())
             .then(() => setDbReady(true))
-            .catch(() => setDbReady(true)); // Continue even if DB init fails (might already exist)
+            .catch(() => setDbReady(true));
     }, []);
+
+    // Script chain: each script loads after the previous one
+    const scriptOrder = [
+        '/js/config.js',
+        '/js/api.js',
+        '/js/auth-client.js',
+        '/js/ui.js',
+        '/js/news.js',
+        '/js/app-client.js',
+    ];
 
     return (
         <>
@@ -78,7 +89,6 @@ export default function Home() {
 
             {/* Main App */}
             <div id="app" className="app hidden">
-                {/* Sidebar */}
                 <aside id="sidebar" className="sidebar">
                     <div className="sidebar-header">
                         <div className="sidebar-logo">
@@ -121,9 +131,7 @@ export default function Home() {
                     </div>
                 </aside>
 
-                {/* Main Content */}
                 <main className="main-content">
-                    {/* Header */}
                     <header className="top-header">
                         <div className="header-left">
                             <button id="mobile-menu-btn" className="mobile-menu-btn">
@@ -143,7 +151,6 @@ export default function Home() {
                         </div>
                     </header>
 
-                    {/* Dashboard Page */}
                     <div id="page-dashboard" className="page active">
                         <div className="market-summary" id="market-summary">
                             <div className="summary-card vnindex" id="vnindex-card">
@@ -206,7 +213,6 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* Stocks Page */}
                     <div id="page-stocks" className="page">
                         <div className="section-header">
                             <h3><i className="fas fa-building-columns"></i> Chứng khoán Việt Nam</h3>
@@ -243,7 +249,6 @@ export default function Home() {
                         </div>
                     </div>
 
-                    {/* Crypto Page */}
                     <div id="page-crypto" className="page">
                         <div className="section-header">
                             <h3><i className="fab fa-bitcoin"></i> Thị trường Crypto</h3>
@@ -251,7 +256,6 @@ export default function Home() {
                         <div className="crypto-grid" id="crypto-grid"></div>
                     </div>
 
-                    {/* News Page */}
                     <div id="page-news" className="page">
                         <div className="section-header">
                             <h3><i className="fas fa-newspaper"></i> Tin tức 24h</h3>
@@ -292,7 +296,6 @@ export default function Home() {
                             </button>
                         </div>
 
-                        {/* Stock Tab */}
                         <div id="modal-stock-content" className="modal-tab-content active">
                             <div className="modal-search">
                                 <i className="fas fa-search"></i>
@@ -316,7 +319,6 @@ export default function Home() {
                             <div id="modal-stock-results" className="modal-results"></div>
                         </div>
 
-                        {/* Crypto Tab */}
                         <div id="modal-crypto-content" className="modal-tab-content">
                             <div className="modal-search">
                                 <i className="fas fa-search"></i>
@@ -341,18 +343,17 @@ export default function Home() {
                 </div>
             </div>
 
-            {/* Toast Notification */}
             <div id="toast-container" className="toast-container"></div>
 
-            {/* Scripts - loaded in order */}
+            {/* Scripts - loaded sequentially in dependency order */}
             {dbReady && (
                 <>
-                    <Script src="/js/config.js" strategy="afterInteractive" />
-                    <Script src="/js/api.js" strategy="afterInteractive" />
-                    <Script src="/js/auth-client.js" strategy="afterInteractive" />
-                    <Script src="/js/ui.js" strategy="afterInteractive" />
-                    <Script src="/js/news.js" strategy="afterInteractive" />
-                    <Script src="/js/app-client.js" strategy="afterInteractive" />
+                    <Script src={scriptOrder[0]} strategy="afterInteractive" onReady={() => setScriptsLoaded(1)} />
+                    {scriptsLoaded >= 1 && <Script src={scriptOrder[1]} strategy="afterInteractive" onReady={() => setScriptsLoaded(2)} />}
+                    {scriptsLoaded >= 2 && <Script src={scriptOrder[2]} strategy="afterInteractive" onReady={() => setScriptsLoaded(3)} />}
+                    {scriptsLoaded >= 3 && <Script src={scriptOrder[3]} strategy="afterInteractive" onReady={() => setScriptsLoaded(4)} />}
+                    {scriptsLoaded >= 4 && <Script src={scriptOrder[4]} strategy="afterInteractive" onReady={() => setScriptsLoaded(5)} />}
+                    {scriptsLoaded >= 5 && <Script src={scriptOrder[5]} strategy="afterInteractive" onReady={() => setScriptsLoaded(6)} />}
                 </>
             )}
         </>

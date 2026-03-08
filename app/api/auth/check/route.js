@@ -8,6 +8,14 @@ import { cookies } from 'next/headers';
 
 export async function GET() {
     try {
+        // Check if POSTGRES_URL is configured
+        if (!process.env.POSTGRES_URL) {
+            return Response.json({
+                status: 'no_password',
+                error: 'Database not configured'
+            });
+        }
+
         const passwordExists = await isPasswordSet();
 
         if (!passwordExists) {
@@ -30,6 +38,13 @@ export async function GET() {
         return Response.json({ status: 'authenticated' });
     } catch (error) {
         console.error('Auth check error:', error);
-        return Response.json({ error: 'Internal server error' }, { status: 500 });
+        // If DB tables don't exist yet, treat as no password set
+        if (error.message && error.message.includes('does not exist')) {
+            return Response.json({ status: 'no_password' });
+        }
+        return Response.json({
+            error: `Auth check failed: ${error.message}`,
+            status: 'no_password'  // Fallback: show setup screen
+        }, { status: 200 }); // Return 200 so frontend doesn't break
     }
 }
