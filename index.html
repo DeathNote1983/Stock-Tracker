@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Ứng dụng theo dõi Chứng khoán Việt Nam (HOSE, HNX, UPCOM) và Crypto (BTC, ETH, SOL) thời gian thực">
+    <title>VN Stock & Crypto Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-bg-animation">
+            <div class="floating-orb orb-1"></div>
+            <div class="floating-orb orb-2"></div>
+            <div class="floating-orb orb-3"></div>
+            <div class="floating-orb orb-4"></div>
+        </div>
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h1>VN Tracker</h1>
+                    <p class="login-subtitle">Chứng khoán & Crypto Real-time</p>
+                </div>
+                <form id="login-form" class="login-form">
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required
+                            autocomplete="current-password">
+                    </div>
+                    <div id="login-error" class="login-error hidden">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>Mật khẩu không chính xác</span>
+                    </div>
+                    <button type="submit" id="login-btn" class="login-btn">
+                        <span>Đăng nhập</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+                <div id="setup-password" class="setup-section">
+                    <p class="setup-text">Lần đầu? Tạo mật khẩu mới</p>
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-key"></i>
+                        </div>
+                        <input type="password" id="new-password" placeholder="Tạo mật khẩu mới..."
+                            autocomplete="new-password">
+                    </div>
+                    <div class="input-group">
+                        <div class="input-icon">
+                            <i class="fas fa-shield-halved"></i>
+                        </div>
+                        <input type="password" id="confirm-password" placeholder="Xác nhận mật khẩu..."
+                            autocomplete="new-password">
+                    </div>
+                    <div id="setup-error" class="login-error hidden">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span></span>
+                    </div>
+                    <button type="button" id="setup-btn" class="login-btn setup-btn">
+                        <span>Tạo mật khẩu</span>
+                        <i class="fas fa-check"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="app hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon-sm">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <span class="sidebar-title">VN Tracker</span>
+                </div>
+                <button id="sidebar-toggle" class="sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="stocks" id="nav-stocks">
+                    <i class="fas fa-building-columns"></i>
+                    <span>Chứng khoán VN</span>
+                </a>
+                <a href="#" class="nav-item" data-page="crypto" id="nav-crypto">
+                    <i class="fab fa-bitcoin"></i>
+                    <span>Crypto</span>
+                </a>
+                <a href="#" class="nav-item" data-page="news" id="nav-news">
+                    <i class="fas fa-newspaper"></i>
+                    <span>Tin tức 24h</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="market-status" id="market-status">
+                    <div class="status-dot"></div>
+                    <span>Đang kết nối...</span>
+                </div>
+                <button id="logout-btn" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Đăng xuất</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button id="mobile-menu-btn" class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="page-title" class="page-title">Dashboard</h2>
+                    <span class="page-subtitle" id="current-time"></span>
+                </div>
+                <div class="header-right">
+                    <button id="add-watchlist-btn" class="btn-primary" title="Thêm mã theo dõi">
+                        <i class="fas fa-plus"></i>
+                        <span>Thêm mã</span>
+                    </button>
+                    <button id="refresh-btn" class="btn-icon" title="Làm mới dữ liệu">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dashboard Page -->
+            <div id="page-dashboard" class="page active">
+                <!-- Market Summary -->
+                <div class="market-summary" id="market-summary">
+                    <div class="summary-card vnindex" id="vnindex-card">
+                        <div class="summary-header">
+                            <span class="summary-label">VN-Index</span>
+                            <span class="summary-exchange">HOSE</span>
+                        </div>
+                        <div class="summary-price" id="vnindex-price">--</div>
+                        <div class="summary-change" id="vnindex-change">
+                            <span>--</span>
+                        </div>
+                    </div>
+                    <div class="summary-card hnxindex" id="hnxindex-card">
+                        <div class="summary-header">
+                            <span class="summary-label">HNX-Index</span>
+                            <span class="summary-exchange">HNX</span>
+                        </div>
+                        <div class="summary-price" id="hnxindex-price">--</div>
+                        <div class="summary-change" id="hnxindex-change">
+                            <span>--</span>
+                        </div>
+                    </div>
+                    <div class="summary-card btc" id="btc-summary-card">
+                        <div class="summary-header">
+                            <span class="summary-label">Bitcoin</span>
+                            <span class="summary-exchange">BTC</span>
+                        </div>
+                        <div class="summary-price" id="btc-summary-price">--</div>
+                        <div class="summary-change" id="btc-summary-change">
+                            <span>--</span>
+                        </div>
+                    </div>
+                    <div class="summary-card eth" id="eth-summary-card">
+                        <div class="summary-header">
+                            <span class="summary-label">Ethereum</span>
+                            <span class="summary-exchange">ETH</span>
+                        </div>
+                        <div class="summary-price" id="eth-summary-price">--</div>
+                        <div class="summary-change" id="eth-summary-change">
+                            <span>--</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Watchlist Section -->
+                <div class="section-header">
+                    <h3><i class="fas fa-eye"></i> Danh sách theo dõi</h3>
+                    <div class="section-actions">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all" id="filter-all">Tất cả</button>
+                            <button class="filter-tab" data-filter="stock" id="filter-stock">Chứng khoán</button>
+                            <button class="filter-tab" data-filter="crypto" id="filter-crypto">Crypto</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="watchlist-grid" class="watchlist-grid">
+                    <!-- Cards will be dynamically generated -->
+                </div>
+
+                <div id="empty-watchlist" class="empty-state hidden">
+                    <div class="empty-icon">
+                        <i class="fas fa-binoculars"></i>
+                    </div>
+                    <h3>Chưa có mã nào được theo dõi</h3>
+                    <p>Nhấn "Thêm mã" để bắt đầu theo dõi chứng khoán và crypto</p>
+                    <button class="btn-primary add-first-btn" id="add-first-btn">
+                        <i class="fas fa-plus"></i>
+                        <span>Thêm mã đầu tiên</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stocks Page -->
+            <div id="page-stocks" class="page">
+                <div class="section-header">
+                    <h3><i class="fas fa-building-columns"></i> Chứng khoán Việt Nam</h3>
+                </div>
+                <div class="stock-table-container">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="stock-search" placeholder="Tìm mã chứng khoán..." autocomplete="off">
+                        </div>
+                        <div class="exchange-filter">
+                            <button class="exchange-btn active" data-exchange="all" id="exchange-all">Tất cả</button>
+                            <button class="exchange-btn" data-exchange="HOSE" id="exchange-hose">HOSE</button>
+                            <button class="exchange-btn" data-exchange="HNX" id="exchange-hnx">HNX</button>
+                            <button class="exchange-btn" data-exchange="UPCOM" id="exchange-upcom">UPCOM</button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="stock-table" id="stock-table">
+                            <thead>
+                                <tr>
+                                    <th>Mã CK</th>
+                                    <th>Sàn</th>
+                                    <th>Giá</th>
+                                    <th>Thay đổi</th>
+                                    <th>% Thay đổi</th>
+                                    <th>KL</th>
+                                    <th>Theo dõi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stock-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Crypto Page -->
+            <div id="page-crypto" class="page">
+                <div class="section-header">
+                    <h3><i class="fab fa-bitcoin"></i> Thị trường Crypto</h3>
+                </div>
+                <div class="crypto-grid" id="crypto-grid">
+                    <!-- crypto cards generated dynamically -->
+                </div>
+            </div>
+
+            <!-- News Page -->
+            <div id="page-news" class="page">
+                <div class="section-header">
+                    <h3><i class="fas fa-newspaper"></i> Tin tức 24h</h3>
+                    <div class="section-actions">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-news-filter="all" id="news-filter-all">Tất
+                                cả</button>
+                            <button class="filter-tab" data-news-filter="stock" id="news-filter-stock">Chứng
+                                khoán</button>
+                            <button class="filter-tab" data-news-filter="crypto" id="news-filter-crypto">Crypto</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="news-list" class="news-list">
+                    <!-- News cards generated dynamically -->
+                </div>
+                <div id="news-loading" class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Đang tải tin tức...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Watchlist Modal -->
+    <div id="add-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> Thêm mã theo dõi</h3>
+                <button class="modal-close" id="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-modal-tab="stock" id="modal-tab-stock">
+                        <i class="fas fa-building-columns"></i> Chứng khoán VN
+                    </button>
+                    <button class="modal-tab" data-modal-tab="crypto" id="modal-tab-crypto">
+                        <i class="fab fa-bitcoin"></i> Crypto
+                    </button>
+                </div>
+
+                <!-- Stock Tab -->
+                <div id="modal-stock-content" class="modal-tab-content active">
+                    <div class="modal-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="modal-stock-search"
+                            placeholder="Tìm mã chứng khoán (VD: VNM, FPT, VIC...)" autocomplete="off">
+                    </div>
+                    <div class="popular-stocks">
+                        <p class="popular-label">Phổ biến:</p>
+                        <div class="popular-tags" id="popular-stock-tags">
+                            <button class="tag-btn" data-symbol="VNM">VNM</button>
+                            <button class="tag-btn" data-symbol="FPT">FPT</button>
+                            <button class="tag-btn" data-symbol="VIC">VIC</button>
+                            <button class="tag-btn" data-symbol="VHM">VHM</button>
+                            <button class="tag-btn" data-symbol="HPG">HPG</button>
+                            <button class="tag-btn" data-symbol="PDR">PDR</button>
+                            <button class="tag-btn" data-symbol="VNZ">VNZ</button>
+                            <button class="tag-btn" data-symbol="VCB">VCB</button>
+                            <button class="tag-btn" data-symbol="TCB">TCB</button>
+                            <button class="tag-btn" data-symbol="SSI">SSI</button>
+                        </div>
+                    </div>
+                    <div id="modal-stock-results" class="modal-results">
+                        <!-- Search results -->
+                    </div>
+                </div>
+
+                <!-- Crypto Tab -->
+                <div id="modal-crypto-content" class="modal-tab-content">
+                    <div class="modal-search">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="modal-crypto-search" placeholder="Tìm crypto (VD: BTC, ETH, SOL...)"
+                            autocomplete="off">
+                    </div>
+                    <div class="popular-stocks">
+                        <p class="popular-label">Phổ biến:</p>
+                        <div class="popular-tags" id="popular-crypto-tags">
+                            <button class="tag-btn" data-crypto="bitcoin">BTC</button>
+                            <button class="tag-btn" data-crypto="ethereum">ETH</button>
+                            <button class="tag-btn" data-crypto="solana">SOL</button>
+                            <button class="tag-btn" data-crypto="binancecoin">BNB</button>
+                            <button class="tag-btn" data-crypto="ripple">XRP</button>
+                            <button class="tag-btn" data-crypto="cardano">ADA</button>
+                            <button class="tag-btn" data-crypto="dogecoin">DOGE</button>
+                            <button class="tag-btn" data-crypto="polkadot">DOT</button>
+                        </div>
+                    </div>
+                    <div id="modal-crypto-results" class="modal-results">
+                        <!-- Search results -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/news.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>
